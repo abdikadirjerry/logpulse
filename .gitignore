@@ -1,0 +1,17 @@
+# Python virtualenv & cache
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Database & local data
+*.db
+*.sqlite3
+
+# OS / Editor files
+.DS_Store
+.idea/
+.vscode/
