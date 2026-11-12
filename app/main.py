@@ -5,11 +5,22 @@ LogPulse Main FastAPI Application Entrypoint.
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+from app.core.database import engine, Base
+from app.api import applications, logs
+from app.models import Application, LogEntry, AlertRule  # Register models
+
+# Automatically create SQLite tables on startup
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI(
     title="LogPulse API",
     description="Application log analyzer & alert dashboard",
     version="1.0.0",
 )
+
+# Include API routers
+app.include_router(applications.router)
+app.include_router(logs.router)
 
 
 @app.get("/health", tags=["Health Check"])
