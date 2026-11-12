@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LogPulse | Application Log Analyzer & Alert Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+    <!-- Navigation Header -->
+    <header class="bg-slate-900 border-b border-slate-800 shadow-md">
+      <div
+        class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center"
+      >
+        <div class="flex items-center space-x-3">
+          <span
+            class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent"
+            >📈 LogPulse</span
+          >
+          <span
+            class="text-xs bg-slate-800 text-emerald-300 px-2 py-1 rounded-full font-mono border border-slate-700"
+            >v1.0 Observability</span
+          >
+        </div>
+        <div
+          id="stats-banner"
+          class="flex space-x-6 text-sm text-slate-300 font-medium"
+        >
+          <div>
+            Total Logs:
+            <span id="stat-total-logs" class="font-bold text-white">0</span>
+          </div>
+          <div>
+            Total Errors:
+            <span id="stat-errors" class="font-bold text-red-400">0</span>
+          </div>
+          <div>
+            Error Rate:
+            <span id="stat-error-rate" class="font-bold text-amber-400"
+              >0.0%</span
+            >
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <main
+      class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8"
+    >
+      <!-- Column 1: Application Registration & Selector -->
+      <section
+        class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg flex flex-col"
+      >
+        <h2
+          class="text-xl font-semibold mb-4 flex items-center text-emerald-400"
+        >
+          🚀 Monitored Services
+        </h2>
+        <form id="app-form" class="space-y-3 mb-6">
+          <input
+            type="text"
+            id="app-name"
+            placeholder="Service name (e.g. auth-service)..."
+            required
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+          />
+          <select
+            id="app-env"
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+          >
+            <option value="production">Production</option>
+            <option value="staging">Staging</option>
+            <option value="development">Development</option>
+          </select>
+          <button
+            type="submit"
+            class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg px-3 py-2 transition shadow"
+          >
+            Register Service
+          </button>
+        </form>
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-slate-400 mb-1"
+            >Filter by Service:</label
+          >
+          <select
+            id="filter-app-select"
+            onchange="handleAppFilterChange()"
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+          >
+            <option value="">All Services</option>
+          </select>
+        </div>
+        <div
+          id="apps-list"
+          class="space-y-2 overflow-y-auto max-h-[250px] pr-1"
+        >
+          <!-- Dynamically loaded applications -->
+        </div>
+      </section>
+
+      <!-- Column 2: Log Stream Ingestion & Viewer -->
+      <section
+        class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg flex flex-col lg:col-span-2"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold flex items-center text-cyan-400">
+            📋 Ingested Log Stream
+          </h2>
+          <div class="flex space-x-2">
+            <select
+              id="filter-level"
+              onchange="loadLogs()"
+              class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-cyan-500"
+            >
+              <option value="">All Levels</option>
+              <option value="INFO">INFO</option>
+              <option value="WARNING">WARNING</option>
+              <option value="ERROR">ERROR</option>
+              <option value="FATAL">FATAL</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Log Ingestion Form -->
+        <form
+          id="log-form"
+          class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-6 bg-slate-950 p-4 rounded-lg border border-slate-800"
+        >
+          <select
+            id="log-app-id"
+            required
+            class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+          >
+            <option value="">Select Service...</option>
+          </select>
+          <select
+            id="log-level"
+            class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+          >
+            <option value="INFO">INFO</option>
+            <option value="WARNING">WARNING</option>
+            <option value="ERROR">ERROR</option>
+            <option value="FATAL">FATAL</option>
+          </select>
+          <input
+            type="text"
+            id="log-module"
+            placeholder="Module (e.g. auth)"
+            required
+            class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+          />
+          <button
+            type="submit"
+            class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold rounded-lg px-3 py-2 transition shadow"
+          >
+            Ingest Log
+          </button>
+          <input
+            type="text"
+            id="log-message"
+            placeholder="Log message (e.g. Database connection timeout)..."
+            required
+            class="md:col-span-4 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+          />
+        </form>
+
+        <!-- Logs Table Container -->
+        <div class="overflow-y-auto max-h-[350px] pr-1">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-400">
+                <th class="py-2 px-3">Timestamp</th>
+                <th class="py-2 px-3">Level</th>
+                <th class="py-2 px-3">Module</th>
+                <th class="py-2 px-3">Message</th>
+              </tr>
+            </thead>
+            <tbody id="logs-table-body">
+              <!-- Dynamically populated logs -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer
+      class="text-center py-6 text-slate-500 text-xs border-t border-slate-900 mt-12"
+    >
+      LogPulse Observability Dashboard &bull; Built with FastAPI & Tailwind CSS
+    </footer>
+  </body>
+</html>
