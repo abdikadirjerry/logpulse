@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from app.core.database import engine, Base
-from app.api import applications, logs, analytics
+from app.api import applications, logs, analytics, alerts
 from app.models import Application, LogEntry, AlertRule  # Register models
 
 # Automatically create SQLite tables on startup
@@ -18,10 +18,11 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Include API routers
+# Include all API routers
 app.include_router(applications.router)
 app.include_router(logs.router)
 app.include_router(analytics.router)
+app.include_router(alerts.router)
 
 
 @app.get("/health", tags=["Health Check"])
